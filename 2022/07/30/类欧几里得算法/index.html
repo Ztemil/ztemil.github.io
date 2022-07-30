@@ -1,116 +1,153 @@
-<?xml version="1.0" encoding="utf-8"?>
-<search>
-  <entry>
-    <title>浅谈块状数组与莫队</title>
-    <url>/2022/06/20/%E6%B5%85%E8%B0%88%E5%9D%97%E7%8A%B6%E6%95%B0%E7%BB%84%E4%B8%8E%E8%8E%AB%E9%98%9F/</url>
-    <content><![CDATA[<h2 id="块状数组"><a class="markdownIt-Anchor" href="#块状数组"></a> 块状数组</h2>
-<p>实际上，分块是一种思想，块状数组仅仅是其实现方式之一。</p>
-<p>把一个整体划分为若干个小块，对于整块整体处理，零散处仅需要优雅的处理即可。</p>
-<p>我们首先介绍块状数组，即用分块思想处理区间问题的一种数据结构。</p>
-<span id="more"></span>
-<p>一般来说我们取块长为 $ \sqrt{n} $ 以平衡复杂度，最差情况下仅需处理接近 $ \sqrt{n} $ 个整块，并且需要对长度为 $ \frac{2n}{\sqrt{n}} $ 的零散处进行单独处理，总体复杂度为 $ O (\sqrt{n}) $ ，是一种<s>牛逼的</s>根号算法。</p>
-<p>显然<strong>在一些情况下</strong>我们的根号算法比不上对数级算法，但是用<s>巨大的</s>时间所换来的是我们更高的灵活性。块状数组显然维护东西的时候不需要结合律，也不用依靠线段树的递归结构去传递$ tag $。当然了，我们也可以直接把它看做是一颗高度为3的树，不是二叉树。</p>
-<p>没了。</p>
-<p>主要还是去看具体怎么维护一些东西。</p>
-<p>我们在这里就以Loj上的序列分块<strong>入门</strong>为例子来浅浅地实现一下。</p>
-<p>入门1：</p>
-<p><s>观察数据范围显然分块可做</s></p>
-<p>提前预处理出来每个块的左右端点，根据题意模拟。</p>
-<p>因为是单点查询，类似于线段树的$ lazytag $，我们也对于每一个块也整一个 $ tag $ 。这样你就可以在处理整个块的时候直接对于整个块进行加减。</p>
-<p>当左右端点没有越过两个块的时候，直接<strong>优雅地处理</strong>。</p>
-<p>否则，找到两个端点所在块，于中间的块进行整体处理，对于两边的块依旧<strong>优雅地处理</strong>。有句话说得好，越简单的算法就越优雅。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-type">int</span> n;<br><span class="hljs-type">int</span> num,len;<br><span class="hljs-type">int</span> le[<span class="hljs-number">50010</span>],re[<span class="hljs-number">50010</span>];<br><span class="hljs-type">int</span> belong[<span class="hljs-number">50010</span>];<br><span class="hljs-type">int</span> tag[<span class="hljs-number">51000</span>];<br><span class="hljs-type">int</span> a[<span class="hljs-number">50010</span>];<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work1</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> p1=belong[l];<br>	<span class="hljs-type">int</span> p2=belong[r];<br>	<span class="hljs-keyword">if</span>(p2-p1&lt;=<span class="hljs-number">2</span>)<br>	&#123;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=l;i&lt;=r;i++)<br>			a[i]+=c;<br>	&#125;<br>	<span class="hljs-keyword">else</span><br>	&#123;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=p1+<span class="hljs-number">1</span>;i&lt;=p2<span class="hljs-number">-1</span>;i++)<br>			tag[i]+=c;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=l;i&lt;=re[p1];i++)<br>			a[i]+=c;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=le[p2];i&lt;=r;i++)<br>			a[i]+=c;<br>	&#125;<br>	<br>	<span class="hljs-keyword">return</span> ;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work2</span><span class="hljs-params">(<span class="hljs-type">int</span> r)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,a[r]+tag[belong[r]]);<br>	<span class="hljs-keyword">return</span> ;<br>&#125; <br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	n=<span class="hljs-built_in">read</span>();<br>	num=<span class="hljs-built_in">sqrt</span>(n);<br>	len=(n<span class="hljs-number">-1</span>)/num+<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>	&#123;<br>		a[i]=<span class="hljs-built_in">read</span>();<br>		belong[i]=(i<span class="hljs-number">-1</span>)/num+<span class="hljs-number">1</span>;<br>	&#125;<br>	<br>	le[<span class="hljs-number">1</span>]=<span class="hljs-number">1</span>; re[<span class="hljs-number">1</span>]=num; <br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">2</span>;i&lt;=len;i++)<br>	&#123;<br>		le[i]=re[i<span class="hljs-number">-1</span>]+<span class="hljs-number">1</span>;<br>		re[i]=le[i]+num<span class="hljs-number">-1</span>;<br>	&#125;<br>	<br>	<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>	&#123;<br>		<span class="hljs-type">int</span> opt;<br>		<span class="hljs-type">int</span> l,r,c;<br>		opt=<span class="hljs-built_in">read</span>();<br>		l=<span class="hljs-built_in">read</span>(); r=<span class="hljs-built_in">read</span>(); c=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-keyword">if</span>(opt==<span class="hljs-number">0</span>)<br>			<span class="hljs-built_in">work1</span>(l,r,c);<br>		<span class="hljs-keyword">else</span><br>			<span class="hljs-built_in">work2</span>(r);<br>	&#125;<br>	<br>	<span class="hljs-keyword">return</span> ;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">work</span>();<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>入门2：</p>
-<p>带修查找区间内小于某个值的元素数量。</p>
-<p>我们写分块时主要考虑的是修改和查询之间的关系，我们要让所维护的东西尽量去靠拢查询，便于我们处理。</p>
-<p>对于问题，我们发现这东西不好去简单的维护，那就先想想大力维护。</p>
-<p>如果整个序列无序，那么我们只能直接遍历判断。</p>
-<p>但是我们是分块。</p>
-<p>如果某个块内有序，是否可以更快的得到答案？事实证明可以。</p>
-<p>有序之后直接二分可以在 $ O(logn) $ 时间内找到此块的答案。</p>
-<p>秉承着这个思路，我们考虑怎么实现修改：</p>
-<p>我们更改元素后如果是整块地修改那么显然相对大小不变。对于零散块来说，显然这玩意又无序了。咋办呢？再排一遍。</p>
-<p>我们可以用vector来帮助我们实现。</p>
-<p>剩下的预处理啥的和入门1一样，不再阐述。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-type">int</span> n; <br><span class="hljs-type">int</span> Size,len;<br><span class="hljs-type">int</span> a[<span class="hljs-number">50010</span>*<span class="hljs-number">2</span>]; <br><span class="hljs-type">int</span> belong[<span class="hljs-number">50010</span>*<span class="hljs-number">2</span>];<br><span class="hljs-type">int</span> le[<span class="hljs-number">510</span>],ri[<span class="hljs-number">510</span>];<br><span class="hljs-type">int</span> tag[<span class="hljs-number">510</span>];<br>vector&lt;<span class="hljs-type">int</span>&gt; v[<span class="hljs-number">510</span>];<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">lnit</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span><br><span class="hljs-function"></span>&#123;<br>	v[x].<span class="hljs-built_in">clear</span>();<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=le[x];i&lt;=ri[x];i++)<br>		v[x].<span class="hljs-built_in">push_back</span>(a[i]);<br>	<span class="hljs-built_in">sort</span>(v[x].<span class="hljs-built_in">begin</span>(),v[x].<span class="hljs-built_in">end</span>());<br>&#125; <br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work1</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> bl=belong[l],br=belong[r];<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=l;i&lt;=<span class="hljs-built_in">min</span>(ri[bl],r);i++)<br>		a[i]+=c;<br>	<span class="hljs-built_in">lnit</span>(bl);<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=bl+<span class="hljs-number">1</span>;i&lt;=br<span class="hljs-number">-1</span>;i++)<br>		tag[i]+=c;<br>	<br>	<span class="hljs-keyword">if</span>(bl!=br)<br>	&#123;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=le[br];i&lt;=r;i++)<br>			a[i]+=c;		<br>		<span class="hljs-built_in">lnit</span>(br);<br>	&#125;	<br>	<br>	<span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work2</span><span class="hljs-params">(<span class="hljs-type">int</span> l,<span class="hljs-type">int</span> r,<span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-type">int</span> bl=belong[l],br=belong[r];<br>	<span class="hljs-type">int</span> ansx=<span class="hljs-number">0</span>; <span class="hljs-type">long</span> <span class="hljs-type">long</span> mod=c*c;<br>	<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=l;i&lt;=<span class="hljs-built_in">min</span>(ri[bl],r);i++)<br>	&#123;<br>		<span class="hljs-keyword">if</span>(mod&gt;a[i]+tag[bl])<br>			ansx++;<br>	&#125;<br>	<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=bl+<span class="hljs-number">1</span>;i&lt;=br<span class="hljs-number">-1</span>;i++)<br>	&#123;<br>		ansx+=<span class="hljs-built_in">lower_bound</span>(v[i].<span class="hljs-built_in">begin</span>(),v[i].<span class="hljs-built_in">end</span>(),mod-tag[i])-v[i].<span class="hljs-built_in">begin</span>();<br>	&#125;<br>	<br>	<span class="hljs-keyword">if</span>(bl!=br)<br>	&#123;<br>		<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=le[br];i&lt;=r;i++)<br>		&#123;<br>			<span class="hljs-keyword">if</span>(mod&gt;a[i]+tag[br])<br>				ansx++;<br>		&#125;<br>	&#125;<br>	<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,ansx);<br>	<br>	<span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	n=<span class="hljs-built_in">read</span>();<br>	Size=<span class="hljs-built_in">sqrt</span>(n);<br>	len=(n<span class="hljs-number">-1</span>)/Size+<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>		a[i]=<span class="hljs-built_in">read</span>(),belong[i]=(i<span class="hljs-number">-1</span>)/Size+<span class="hljs-number">1</span>;<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>		v[belong[i]].<span class="hljs-built_in">push_back</span>(a[i]);<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=belong[n];i++)<br>		<span class="hljs-built_in">sort</span>(v[i].<span class="hljs-built_in">begin</span>(),v[i].<span class="hljs-built_in">end</span>());<br>	<br>	le[<span class="hljs-number">1</span>]=<span class="hljs-number">1</span>; ri[<span class="hljs-number">1</span>]=Size; <br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">2</span>;i&lt;=len;i++)<br>	&#123;<br>		le[i]=ri[i<span class="hljs-number">-1</span>]+<span class="hljs-number">1</span>;<br>		ri[i]=le[i]+Size<span class="hljs-number">-1</span>;<br>	&#125;	<br>	<br>	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>	&#123;<br>		<span class="hljs-type">int</span> opt,l,r,c;<br>		opt=<span class="hljs-built_in">read</span>();<br>		l=<span class="hljs-built_in">read</span>();<br>		r=<span class="hljs-built_in">read</span>();<br>		c=<span class="hljs-built_in">read</span>();<br>		<span class="hljs-keyword">if</span>(opt==<span class="hljs-number">0</span>)<br>			<span class="hljs-built_in">work1</span>(l,r,c);<br>		<span class="hljs-keyword">else</span> <br>			<span class="hljs-built_in">work2</span>(l,r,c); <br>	 &#125; <br>	<br>	<span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-built_in">work</span>();<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>入门3：</p>
-<p>带修找前驱。</p>
-<p>和上一个题一样，因为都是找小于某个数，同样考虑二分；</p>
-<p>别的操作都差不多，只不过是你的查找变成了值。</p>
-<p>直接lower_bound一下找位置就是所求。</p>
-<p>再给每个块所求的取个 $ max $ 。</p>
-<p>没了</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long</span><br><span class="hljs-type">int</span> n, Size, len;<br><span class="hljs-type">int</span> a[<span class="hljs-number">100010</span>];<br><span class="hljs-type">int</span> be[<span class="hljs-number">100010</span>];<br><span class="hljs-type">int</span> tag[<span class="hljs-number">100010</span>];<br><span class="hljs-type">int</span> le[<span class="hljs-number">101000</span>], ri[<span class="hljs-number">100010</span>];<br>set&lt;<span class="hljs-type">int</span>&gt; s[<span class="hljs-number">100010</span>];<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-type">int</span> l, <span class="hljs-type">int</span> r, <span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> bl = be[l], br = be[r];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = l; i &lt;= <span class="hljs-built_in">min</span>(ri[bl], r); i++)<br>    &#123;<br>        s[bl].<span class="hljs-built_in">erase</span>(a[i]);<br>        a[i] += c;<br>        s[bl].<span class="hljs-built_in">insert</span>(a[i]);<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (bl != br)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[br]; i &lt;= r; i++)<br>        &#123;<br>            s[br].<span class="hljs-built_in">erase</span>(a[i]);<br>            a[i] += c;<br>            s[br].<span class="hljs-built_in">insert</span>(a[i]);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = bl + <span class="hljs-number">1</span>; i &lt;= br - <span class="hljs-number">1</span>; i++)<br>        tag[i] += c;<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">ask</span><span class="hljs-params">(<span class="hljs-type">int</span> l, <span class="hljs-type">int</span> r, <span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> ansx = <span class="hljs-number">-1</span>;<br>    <span class="hljs-type">int</span> bl = be[l], br = be[r];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = l; i &lt;= <span class="hljs-built_in">min</span>(ri[bl], r); i++)<br>    &#123;<br>        <span class="hljs-type">int</span> v = a[i] + tag[bl];<br>        <span class="hljs-keyword">if</span> (v &lt; c)<br>            ansx = <span class="hljs-built_in">max</span>(v, ansx);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (bl != br)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[br]; i &lt;= r; i++)<br>        &#123;<br>            <span class="hljs-type">int</span> v = a[i] + tag[br];<br>            <span class="hljs-keyword">if</span> (v &lt; c)<br>                ansx = <span class="hljs-built_in">max</span>(ansx, v);<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = bl + <span class="hljs-number">1</span>; i &lt;= br - <span class="hljs-number">1</span>; i++)<br>    &#123;<br>        <span class="hljs-type">int</span> now = c - tag[i];<br>        set&lt;<span class="hljs-type">int</span>&gt;::iterator it = s[i].<span class="hljs-built_in">lower_bound</span>(now);<br>        <span class="hljs-keyword">if</span> (it == s[i].<span class="hljs-built_in">begin</span>())<br>            <span class="hljs-keyword">continue</span>;<br>        --it;<br>        ansx = <span class="hljs-built_in">max</span>(ansx, *it + tag[i]);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>, ansx);<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    n = <span class="hljs-built_in">read</span>();<br>    Size = <span class="hljs-built_in">sqrt</span>(n);<br>    len = (n - <span class="hljs-number">1</span>) / Size + <span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++)<br>    &#123;<br>        a[i] = <span class="hljs-built_in">read</span>();<br>        be[i] = (i - <span class="hljs-number">1</span>) / Size + <span class="hljs-number">1</span>;<br>        s[be[i]].<span class="hljs-built_in">insert</span>(a[i]);<br>    &#125;<br>    le[<span class="hljs-number">1</span>] = <span class="hljs-number">1</span>;<br>    ri[<span class="hljs-number">1</span>] = Size;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">2</span>; i &lt;= len; i++)<br>    &#123;<br>        le[i] = ri[i - <span class="hljs-number">1</span>] + <span class="hljs-number">1</span>;<br>        ri[i] = le[i] + Size - <span class="hljs-number">1</span>;<br>    &#125;<br>    ri[len] = n;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++)<br>    &#123;<br>        <span class="hljs-type">int</span> opt;<br>        <span class="hljs-type">int</span> l, r, c;<br>        opt = <span class="hljs-built_in">read</span>();<br>        l = <span class="hljs-built_in">read</span>();<br>        r = <span class="hljs-built_in">read</span>();<br>        c = <span class="hljs-built_in">read</span>();<br>        <span class="hljs-keyword">if</span> (opt == <span class="hljs-number">0</span>)<br>        &#123;<br>            <span class="hljs-built_in">add</span>(l, r, c);<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            <span class="hljs-built_in">ask</span>(l, r, c);<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">work</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>入门4：</p>
-<p>水</p>
-<p>入门5：</p>
-<p>区间开方，区间求和。</p>
-<p>好消息，不带修。</p>
-<p>所以也是水，直接模拟——</p>
-<p>是肯定不行的，因为开方慢的一批。</p>
-<p>我们想想开方的性质，你会发现一个 $ 2^{32} $ 的数开 $ 5,6 $ 次就会成 $ 1 $ 。</p>
-<p>也就是说一个数开几次后就不用开了，因为此时这个数不是 $ 1 $ 就是 $ 0 $ 。</p>
-<p>那么对于这种开方前后没有区别的块就可以跳过。</p>
-<p>如何判断这种块呢？（<s>智慧核心</s></p>
-<p>记录一个 $ flag $ 数组表示每个块是否有这种特殊性质。</p>
-<p>直接开方即可。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long</span><br><span class="hljs-type">int</span> n, Size, len;<br><span class="hljs-type">int</span> a[<span class="hljs-number">50010</span>];<br><span class="hljs-type">int</span> be[<span class="hljs-number">50010</span>];<br><span class="hljs-type">int</span> sums[<span class="hljs-number">50100</span>];<br><span class="hljs-type">int</span> le[<span class="hljs-number">50100</span>], ri[<span class="hljs-number">50010</span>];<br><span class="hljs-type">bool</span> flag[<span class="hljs-number">5010</span>];<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">sq</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (flag[x])<br>        <span class="hljs-keyword">return</span>;<br>    flag[x] = <span class="hljs-number">1</span>;<br>    sums[x] = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[x]; i &lt;= ri[x]; i++)<br>    &#123;<br>        a[i] = <span class="hljs-built_in">sqrt</span>(a[i]);<br>        sums[x] += a[i];<br>        <span class="hljs-keyword">if</span> (a[i] &gt; <span class="hljs-number">1</span>)<br>            flag[x] = <span class="hljs-number">0</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work1</span><span class="hljs-params">(<span class="hljs-type">int</span> l, <span class="hljs-type">int</span> r)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> bl = be[l], br = be[r];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = l; i &lt;= <span class="hljs-built_in">min</span>(ri[bl], r); i++)<br>    &#123;<br>        sums[bl] -= a[i];<br>        a[i] = <span class="hljs-built_in">sqrt</span>(a[i]);<br>        sums[bl] += a[i];<br>    &#125;<br>    <span class="hljs-keyword">if</span> (bl != br)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[br]; i &lt;= r; i++)<br>        &#123;<br>            sums[br] -= a[i];<br>            a[i] = <span class="hljs-built_in">sqrt</span>(a[i]);<br>            sums[br] += a[i];<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = bl + <span class="hljs-number">1</span>; i &lt;= br - <span class="hljs-number">1</span>; i++)<br>        <span class="hljs-built_in">sq</span>(i);<br><br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work2</span><span class="hljs-params">(<span class="hljs-type">int</span> l, <span class="hljs-type">int</span> r)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> bl = be[l], br = be[r];<br>    <span class="hljs-type">int</span> ansx = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = l; i &lt;= <span class="hljs-built_in">min</span>(ri[bl], r); i++)<br>    &#123;<br>        ansx += a[i];<br>    &#125;<br>    <span class="hljs-keyword">if</span> (bl != br)<br>    &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[br]; i &lt;= r; i++)<br>            ansx += a[i];<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = bl + <span class="hljs-number">1</span>; i &lt;= br - <span class="hljs-number">1</span>; i++)<br>    &#123;<br>        ansx += sums[i];<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>, ansx);<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    n = <span class="hljs-built_in">read</span>();<br>    Size = <span class="hljs-built_in">sqrt</span>(n);<br>    len = (n - <span class="hljs-number">1</span>) / Size + <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++)<br>    &#123;<br>        a[i] = <span class="hljs-built_in">read</span>();<br>        be[i] = (i - <span class="hljs-number">1</span>) / Size + <span class="hljs-number">1</span>;<br>        sums[be[i]] += a[i];<br>    &#125;<br><br>    le[<span class="hljs-number">1</span>] = <span class="hljs-number">1</span>;<br>    ri[<span class="hljs-number">1</span>] = Size;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">2</span>; i &lt;= len; i++)<br>    &#123;<br>        le[i] = ri[i - <span class="hljs-number">1</span>] + <span class="hljs-number">1</span>;<br>        ri[i] = le[i] + Size - <span class="hljs-number">1</span>;<br>    &#125;<br>    ri[be[n]] = n;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++)<br>    &#123;<br>        <span class="hljs-type">int</span> opt, l, r, c;<br>        opt = <span class="hljs-built_in">read</span>();<br>        l = <span class="hljs-built_in">read</span>();<br>        r = <span class="hljs-built_in">read</span>();<br>        c = <span class="hljs-built_in">read</span>();<br>        <span class="hljs-keyword">if</span> (opt == <span class="hljs-number">0</span>)<br>        &#123;<br>            <span class="hljs-built_in">work1</span>(l, r);<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            <span class="hljs-built_in">work2</span>(l, r);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">work</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>入门6：</p>
-<p>单点插入加单点询问。</p>
-<p><s>直接vector即可AC</s></p>
-<p>但是我们想要的不是AC，是如何用分块解决这个问题。</p>
-<p>对于插入这个神奇的操作，我们仍然可以去找到插入的位置所属的块的位置再去插入。</p>
-<p>我们会发现在测试数据之中可能会在同一个位置插入很多次，那么当下一次再次处理此块时会耗费很多时间。所以我们借此引出一个全新的操作，当插入的元素到达了一个界限时我们对所有元素重新分块，重构。</p>
-<p>当然至于“界限”的定义就是各位自己在实际情况中摸索了。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> N=<span class="hljs-number">100010</span>;<br><span class="hljs-keyword">typedef</span> pair&lt;<span class="hljs-type">int</span>,<span class="hljs-type">int</span>&gt; PII;<br><span class="hljs-type">int</span> st[<span class="hljs-number">2</span>*N],a[N],block,num,n,m;<br>vector&lt;<span class="hljs-type">int</span>&gt; v[N];<br><span class="hljs-function">PII <span class="hljs-title">query</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span><span class="hljs-comment">///返回某个位置是在第几个块的第几个位置</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> k=<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">while</span>(x &gt; v[k].<span class="hljs-built_in">size</span>())<br>    &#123;<br>        x -= v[k].<span class="hljs-built_in">size</span>(),k++;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">make_pair</span>(k,x<span class="hljs-number">-1</span>);<span class="hljs-comment">///v中下标从零开始，即每个块的左边界都是0</span><br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">build</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    block=<span class="hljs-built_in">sqrt</span>(n);<br>    num=n/block;<span class="hljs-keyword">if</span>(n%block) num++;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>    &#123;<br>        <span class="hljs-type">int</span> idx=(i<span class="hljs-number">-1</span>)/block+<span class="hljs-number">1</span>;<br>        v[idx].<span class="hljs-built_in">push_back</span>(a[i]);<br>    &#125;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">rebuild</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> s=<span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=num;i++)<br>    &#123;<br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;v[i].<span class="hljs-built_in">size</span>();j++)<br>        &#123;<br>            st[++s]=v[i][j];<br>        &#125;<br>        v[i].<span class="hljs-built_in">clear</span>();<br>    &#125;<br>    <span class="hljs-type">int</span> block2=<span class="hljs-built_in">sqrt</span>(s);<br>    num=s/block2; <span class="hljs-keyword">if</span>(s%block2) num++;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=s;i++)<br>    &#123;<br>        <span class="hljs-type">int</span> idx=(i<span class="hljs-number">-1</span>)/block+<span class="hljs-number">1</span>;<br>        v[idx].<span class="hljs-built_in">push_back</span>(a[i]);<br>    &#125;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">insert</span><span class="hljs-params">(<span class="hljs-type">int</span> x,<span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>    PII tmp=<span class="hljs-built_in">quary</span>(x);<br>    v[tmp.first].<span class="hljs-built_in">insert</span>(v[tmp.first].<span class="hljs-built_in">begin</span>()+tmp.second,c);<br>    <span class="hljs-keyword">if</span>(v[tmp.first].<span class="hljs-built_in">size</span>()&gt;<span class="hljs-number">20</span>*block) <span class="hljs-built_in">rebuild</span>();<br>&#125;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">scanf</span>(<span class="hljs-string">&quot;%d&quot;</span>,&amp;n);<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=n;i++)<br>    &#123;<br>        <span class="hljs-built_in">scanf</span>(<span class="hljs-string">&quot;%d&quot;</span>,&amp;a[i]);<br>    &#125;<br>    <span class="hljs-built_in">build</span>();<br>    m=n;<br>    <span class="hljs-keyword">while</span>(m--)<br>    &#123;<br>        <span class="hljs-type">int</span> op,l,r,c;<br>        <span class="hljs-built_in">scanf</span>(<span class="hljs-string">&quot;%d%d%d%d&quot;</span>,&amp;op,&amp;l,&amp;r,&amp;c);<br>        <span class="hljs-keyword">if</span>(op==<span class="hljs-number">0</span>) <span class="hljs-built_in">insert</span>(l,r);<br>        <span class="hljs-keyword">else</span>&#123;<br>            PII it=<span class="hljs-built_in">query</span>(r);<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>,v[it.first][it.second]);<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>入门7：</p>
-<p>显然，水题</p>
-<p>入门8：</p>
-<p>显然，我们可以用ODT。</p>
-<p>但更显然，我们要用分块。</p>
-<p>直接维护一个 $ flag $ 数组一个 $ num $ 数组，分别表示整个块内元素是否全部相同，$ num $ 表示如果相同的话那个元素是谁.</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> int long long</span><br><span class="hljs-type">int</span> n, Size, len;<br><span class="hljs-type">int</span> belong[<span class="hljs-number">100010</span>];<br><span class="hljs-type">int</span> tag[<span class="hljs-number">100010</span>];<br><span class="hljs-type">int</span> le[<span class="hljs-number">1010</span>], ri[<span class="hljs-number">1010</span>];<br><span class="hljs-type">int</span> a[<span class="hljs-number">100010</span>];<br><span class="hljs-type">int</span> t[<span class="hljs-number">100100</span>];<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">reset</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (tag[x] == <span class="hljs-number">-1</span>)<br>        <span class="hljs-keyword">return</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[x]; i &lt;= ri[x]; i++)<br>    &#123;<br>        a[i] = tag[x];<br>    &#125;<br>    tag[x] = <span class="hljs-number">-1</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">works</span><span class="hljs-params">(<span class="hljs-type">int</span> l, <span class="hljs-type">int</span> r, <span class="hljs-type">int</span> c)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> bl = belong[l], br = belong[r];<br>    <span class="hljs-type">int</span> ansx = <span class="hljs-number">0</span>;<br>    <span class="hljs-built_in">reset</span>(bl);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = l; i &lt;= <span class="hljs-built_in">min</span>(ri[bl], r); i++)<br>    &#123;<br>        <span class="hljs-keyword">if</span> (a[i] != c)<br>            a[i] = c;<br>        <span class="hljs-keyword">else</span><br>            ansx++;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (bl != br)<br>    &#123;<br>        <span class="hljs-built_in">reset</span>(br);<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = le[br]; i &lt;= r; i++)<br>        &#123;<br>            <span class="hljs-keyword">if</span> (a[i] != c)<br>                a[i] = c;<br>            <span class="hljs-keyword">else</span><br>                ansx++;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = bl + <span class="hljs-number">1</span>; i &lt;= br - <span class="hljs-number">1</span>; i++)<br>    &#123;<br>        <span class="hljs-keyword">if</span> (tag[i] != <span class="hljs-number">-1</span>)<br>        &#123;<br>            <span class="hljs-keyword">if</span> (tag[i] != c)<br>                tag[i] = c;<br>            <span class="hljs-keyword">else</span><br>                ansx += Size;<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> j = le[i]; j &lt;= ri[i]; j++)<br>            &#123;<br>                <span class="hljs-keyword">if</span> (a[j] != c)<br>                    a[j] = c;<br>                <span class="hljs-keyword">else</span><br>                    ansx++;<br>                tag[i] = c;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>, ansx);<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title">work</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">memset</span>(tag, <span class="hljs-number">-1</span>, <span class="hljs-built_in">sizeof</span>(tag));<br>    n = <span class="hljs-built_in">read</span>();<br>    Size = <span class="hljs-built_in">sqrt</span>(n);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++)<br>    &#123;<br>        a[i] = <span class="hljs-built_in">read</span>();<br>        belong[i] = (i - <span class="hljs-number">1</span>) / Size + <span class="hljs-number">1</span>;<br>    &#125;<br>    le[<span class="hljs-number">1</span>] = <span class="hljs-number">1</span>;<br>    ri[<span class="hljs-number">1</span>] = Size;<br>    len = belong[n];<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">2</span>; i &lt;= len; i++)<br>    &#123;<br>        le[i] = ri[i - <span class="hljs-number">1</span>] + <span class="hljs-number">1</span>;<br>        ri[i] = le[i] + Size - <span class="hljs-number">1</span>;<br>    &#125;<br>    ri[len] = n;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">register</span> <span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++)<br>    &#123;<br>        <span class="hljs-type">int</span> l, r, c;<br>        l = <span class="hljs-built_in">read</span>();<br>        r = <span class="hljs-built_in">read</span>();<br>        c = <span class="hljs-built_in">read</span>();<br>        <span class="hljs-built_in">works</span>(l, r, c);<br>    &#125;<br><br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">signed</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">work</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>分块9：</p>
-<p>经典老题，找区间最小众数。</p>
-<p>但是它没有强制在线，那么我们显然直接莫队即可。（蒲公英我相信大家都会）</p>
-<p>分块入门9题结束了，这也确实是非常非常基础的几个分块题，主要是帮助大家理解分块的思想。</p>
-<h2 id="莫队"><a class="markdownIt-Anchor" href="#莫队"></a> 莫队</h2>
-<h4 id="普通"><a class="markdownIt-Anchor" href="#普通"></a> 普通</h4>
-<p>一般来说的话序列问题莫队都能做，就是可以解决不强制要求在线的区间问题。</p>
-<p>，只是看数据范围决定你能拿多少分。</p>
-<p>比较常见的类型有普通莫队，带修莫队，回滚莫队和树上莫队等。</p>
-<p>普通的莫队主要优化就是对于询问的排序来让其左右指针的移动尽量少来降低复杂度——</p>
-<p>假设我们有俩指针 $ l $ 和 $ r $ ，第 $ i $ 个需要修改的区间是 $ [L,R] $ ，那么按照最暴力的思想来算，我们要把 $ l $ 移动到 $ L $ ， $ r $ 移动到 $ R $ ，同时统计指针移动所带来的影响。那么每次转移的复杂度是 $ O(1) $ ，但是指针最坏情况下是 $ O(nm) $ 去遍历。</p>
-<p>考虑优化，我们发现暴力复杂度的消耗就是移动指针，所以我们运用分块的思想去把询问都离线，我们只希望左指针尽量只向右移动而不回头，右指针作为第二关键字去考虑尽量少向左移动。</p>
-<p>那么我们把序列分块，按照左端点所在块为第一关键字，右端点为第二关键字，平衡复杂度之后可以做到 $ O(n\sqrt{n}) $ 的优秀复杂度。</p>
-<p>这就是莫队的基本思想，当然我们注意到复杂度还会由每次转移的常数决定，所以我们尽量要在 $ O(1) $ 的时间内去完成$ add $ 与 $ del $操作。</p>
-<p>by the way，左指针初值赋值应为 $ 1 $，右指针则直接赋 $ 0 $。因为左指针也是 $ 0 $ 的话可能会导致重复计算数值为 $ 0 $ 的情况。</p>
-<h4 id="带修"><a class="markdownIt-Anchor" href="#带修"></a> 带修</h4>
-<p>当然很多情况下你的问题是带修的，普通的莫队因为需要离线去处理所以很难维护修改。所以我们要给他改造一下<s>来获得更多的暴力分</s>。</p>
-<p>我们考虑于普通莫队之上新增一个 $ k $ 指针去代表时间戳，表示当前的区间是经历了 $ k $ 次修改之后的状态。</p>
-<p>我们每次给询问都记录一个他的时间戳即它当前经历了几次修改，在每次查询的时候只有当前的区间与 $ l,r,k $ 全部重合才是所求答案。</p>
-<p>当然了因为多维护了一个指针所以莫队复杂度会严重退化，具体解决方法就是把块长调为神奇的 $ n^{\frac{2}{3}} $ ，可以由神奇的不等式证明，这里不再阐述。</p>
-<p>原因是在 $ n $ 和 $ m $ 同阶的情况下会有这么一个式子<br />
-<img src="https://img2022.cnblogs.com/blog/2732530/202205/2732530-20220518082357371-886156521.jpg" alt="image" /></p>
-<p>调完之后复杂度最优为 $ O(n^{\frac{5}{3}}) $ 。</p>
-<h4 id="回滚"><a class="markdownIt-Anchor" href="#回滚"></a> 回滚</h4>
-<p>也叫不删除莫队</p>
-<p>在处理实际问题的时候你会发现一些情况下你的 $ add $ 或者 $ del $ 函数有一个很难实现（<s>如果都不会的话就别用莫队了</s>），那么我们就需要考虑去维护一个操作，再通过更加合理的排序去暴力撤销每个操作的贡献</p>
-<p>假设 $ add $ 很简单，那么我们考虑把删除去掉，而改成增加操作来维护。</p>
-<p>首先我们把左端点所属块为第一关键字，右端点为第二关键字，排序之后可以把 $ r $ 赋值成当前块的结尾， $ l $ 则赋值成下一个块的开头。那么对于每次询问，如果 $ r $ 在当前询问的右端点的左端，那么把右端点去右移。由于这些询问的左端点都在一个块里同时按照右端点升序排序，所以可以直接沿用前面的 $ r $ 。更新之后保存下来答案为 $ k $ 。</p>
-<p>如果 $ l $ 指针在当前询问的左端点的右端，那么我们把 $ l $ 指针左移到当前询问的左端点并更新答案。此时这个询问的答案已经被求出。我们还需要把左端点的影响删除，并且把左端点还原到下一个块的开头。原因是：同一个块内的左端点不一定按照升序排列，如果我们沿用之前的信息，很有可能会处理到不在询问范围内的位置。例如我们先处理了区间 $ [3, 5] $ ，再处理了区间 $ [4, 6] $ 。此时若沿用区间 $ [3, 5] $ 的信息，我们就会考虑到位置 $ 3 $ 的影响，而 $ 3 $ 并不在我们查询的区间 $ [4, 6] $ 内。</p>
-<p>特殊情况是某个询问的左端点和右端点在同一个块内，此时暴力做法的时间复杂度不超过 $ (O(\sqrt{n})) $ ，直接暴力即可。注意莫队和暴力的信息需要分开存储。</p>
-<p>​如果 $ l $ 指针在当前询问的左端点的右端，那我们把 $ l $ 指针左移到当前询问的左端点并更新答案。此时这个询问的答案已经被求出。我们还需要把左端点的影响删除，并且把左端点还原到下一个块的开头。原因是：同一个块内的左端点不一定按照升序排列，如果我们沿用之前的信息，很有可能会处理到不在询问范围内的位置。例如我们先处理了区间 $ [3, 5] $，再处理了区间 $ [4, 6] $ 。此时若沿用区间 $ [3, 5] $ 的信息，我们就会考虑到位置 $ 3 $ 的影响，而 $ 3 $ 并不在我们查询的区间 $ [4, 6] $ 内。</p>
-<p>没了。</p>
-]]></content>
-      <tags>
-        <tag>OI</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>类欧几里得算法</title>
-    <url>/2022/07/30/%E7%B1%BB%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E7%AE%97%E6%B3%95/</url>
-    <content><![CDATA[<h1 id="类欧几里得算法"><a class="markdownIt-Anchor" href="#类欧几里得算法"></a> 类欧几里得算法</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  
+  <!--将该代码放入博客模板的head中即可-->
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true
+  }
+  });
+  </script>
+  <!--latex数学显示公式-->
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#3367D6"/>
+  <link rel="apple-touch-icon" href="/icons-192.png">
+  <link rel="manifest" href="/manifest.json">
+  
+  <meta name="generator" content="Hexo 6.2.0">
+
+  
+
+  
+
+  
+    <meta name="author" content="Ztemily">
+  
+
+  
+
+  
+
+  <title>类欧几里得算法 | 未决天</title>
+
+  
+
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@1.1.3/index.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs@9.16.2/styles/monokai.css">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
+<body>
+  <div class="root-container">
+    
+<!-- header container -->
+<header class="header-container post">
+  
+    <div class="post-image" style="background-image: url(https://cdn.luogu.com.cn/upload/image_hosting/qdsvadmv.png)"></div>
+  
+
+  <!-- navbar -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <!-- logo -->
+    <div class="navbar-logo">
+      <a href="/">
+        
+          未决天
+        
+      </a>
+    </div>
+    <!-- link -->
+    <div class="navbar-link">
+      <div class="navbar-btn">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <ul class="navbar-list">
+        
+          <li class="navbar-list-item"><a href="/">首页</a></li>
+        
+          <li class="navbar-list-item"><a href="/links">友链</a></li>
+        
+          <li class="navbar-list-item"><a href="/about">关于</a></li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+    <div class="header-content">
+      <div class="post-text layout-block">
+        <div class="layout-margin">
+          <h1 class="title-wrap">类欧几里得算法</h1>
+          <h2 class="title-sub-wrap">
+            <strong>Ztemily</strong>
+            <span>发布于</span>
+            <time  class="article-date" datetime="2022-07-30T12:39:08.000Z" itemprop="datePublished">2022-07-30</time>
+          </h2>
+          <ul class="wrap-list dark">
+  
+</ul>
+          <ul class="wrap-list dark">
+  
+    <li><a href="/tags/OI/">🏷️ OI</a></li>
+  
+</ul>
+        </div>
+      </div>
+    </div>
+  
+
+  
+  
+  
+</header>
+
+    <!-- 文章 -->
+
+<!-- 文章内容 -->
+<div class="body-container">
+  <article class="content-container layout-block post-container">
+    <div class="article-info">
+      
+      
+      
+      
+      <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
+        <h1 id="类欧几里得算法"><a class="markdownIt-Anchor" href="#类欧几里得算法"></a> 类欧几里得算法</h1>
 <p>用于解一些神奇式子，形如：</p>
 <p>$ { f(a,b,c,d)=\sum\limits_{i=0}^{n}\lfloor{\frac{ai+b}{c}}\rfloor } $</p>
 <p>$ {g(a,b,c,d)=\sum\limits_{i=0}^{n}i*\lfloor{\frac{ai+b}{c}}\rfloor} $</p>
@@ -210,9 +247,200 @@ n\lfloor\frac{an+b}{c}\rfloor(\lfloor\frac{an+b}{c}\rfloor+1)-2f(c,c-b-1,a,\lflo
 \end{cases}
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">h</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.80002em;vertical-align:-0.65002em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size2">{</span></span><span class="mord"><span class="mtable"><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9710000000000002em;"><span style="top:-2.9709999999999996em;"><span class="pstrut" style="height:3.01em;"></span><span class="mord"><span class="mord mathdefault">h</span><span class="mopen">(</span><span class="mord mathdefault">a</span><span class="mspace allowbreak"></span><span class="mspace" style="margin-right:0.6666666666666666em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">m</span><span class="mord mathrm">o</span><span class="mord mathrm">d</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mspace allowbreak"></span><span class="mspace" style="margin-right:0.6666666666666666em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">m</span><span class="mord mathrm">o</span><span class="mord mathrm">d</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">2</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault">a</span><span class="mspace allowbreak"></span><span class="mspace" style="margin-right:0.6666666666666666em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">m</span><span class="mord mathrm">o</span><span class="mord mathrm">d</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mspace allowbreak"></span><span class="mspace" style="margin-right:0.6666666666666666em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">m</span><span class="mord mathrm">o</span><span class="mord mathrm">d</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">2</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.695392em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault">a</span><span class="mspace allowbreak"></span><span class="mspace" style="margin-right:0.6666666666666666em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">m</span><span class="mord mathrm">o</span><span class="mord mathrm">d</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mspace allowbreak"></span><span class="mspace" style="margin-right:0.6666666666666666em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">m</span><span class="mord mathrm">o</span><span class="mord mathrm">d</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.01em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">6</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.485em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span><span class="mopen mtight">(</span><span class="mord mathdefault mtight">n</span><span class="mbin mtight">+</span><span class="mord mtight">1</span><span class="mclose mtight">)</span><span class="mopen mtight">(</span><span class="mord mtight">2</span><span class="mord mathdefault mtight">n</span><span class="mbin mtight">+</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.695392em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose"><span class="mclose">⌋</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">n</span><span class="mopen">(</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.695392em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mopen">(</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose"><span class="mclose">⌋</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:1em;"></span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathdefault">c</span><span class="mspace"> </span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mspace"> </span><span class="mord mathdefault">b</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathdefault">c</span><span class="mord mathdefault">n</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight">n</span><span class="mbin mtight">+</span><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mopen">(</span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight">n</span><span class="mbin mtight">+</span><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">2</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">b</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight">n</span><span class="mbin mtight">+</span><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">2</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mopen">(</span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">b</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">c</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight">n</span><span class="mbin mtight">+</span><span class="mord mathdefault mtight">b</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">c</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:1em;"></span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathdefault">c</span><span class="mspace"> </span><span class="mord mathdefault">a</span><span class="mord mathdefault">n</span><span class="mord mathdefault">d</span><span class="mspace"> </span><span class="mord mathdefault">b</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathdefault">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.471em;"><span></span></span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
 <p>终</p>
-]]></content>
-      <tags>
-        <tag>OI</tag>
-      </tags>
-  </entry>
-</search>
+
+      </section>
+
+      
+      
+        <nav class="article-nav">
+          
+          
+            <div class="article-nav-item layout-padding">
+  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
+    
+      <div class="card-cover" background-image-lazy data-img="https://cdn.luogu.com.cn/upload/image_hosting/h4iom7bg.png"></div>
+    
+    <div class="card-text">
+      
+        <a href="/2022/06/20/%E6%B5%85%E8%B0%88%E5%9D%97%E7%8A%B6%E6%95%B0%E7%BB%84%E4%B8%8E%E8%8E%AB%E9%98%9F/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">浅谈块状数组与莫队</h2>
+        </a>
+      
+      <div class="card-text--row">Older</div>
+    </div>
+  </article>
+</div>
+          
+        </nav>
+      
+
+      <section class="page-message-container layout-padding">
+        
+
+
+  
+  
+
+  
+  
+
+
+      </section>
+    </div>
+    <div class="widget-info">
+      <section class="widget-author widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-body">
+    
+      <img src="https://cdn.luogu.com.cn/upload/image_hosting/vj8obimb.png" class="soft-size--round soft-style--box" alt="Ztemily">
+    
+    
+      <h2>Ztemily</h2>
+    
+    
+      <p>此后如竟没有炬火，我们便是唯一的光。</p>
+    
+
+    <div class="count-box">
+      <div class="count-box--item">
+        <svg class="icon icon-article" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M240.51564747 647.74217627h196.07203239c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806V165.10332731c0-33.18142087-30.16492806-60.32985613-60.32985612-60.32985611H245.04038668C225.43318342 104.7734712 210.35071939 119.85593522 210.35071939 139.46313845V617.57724821c0 16.59071043 13.57421762 30.16492806 30.16492808 30.16492806z m663.62841731-452.47392089v482.63884894c0 33.18142087-27.14843525 60.32985613-60.32985612 60.32985613H180.18579134c-33.18142087 0-60.32985613-27.14843525-60.32985612-60.32985613V195.26825538c-49.77213131 0-90.49478418 40.72265287-90.49478417 90.49478417v452.4739209c0 49.77213131 40.72265287 90.49478418 90.49478417 90.49478417h286.56681657c16.59071043 0 30.16492806 13.57421762 30.16492807 30.16492807s13.57421762 30.16492806 30.16492805 30.16492806h90.49478418c16.59071043 0 30.16492806-13.57421762 30.16492805-30.16492806s13.57421762-30.16492806 30.16492807-30.16492807h286.56681657c49.77213131 0 90.49478418-40.72265287 90.49478417-90.49478417V285.76303955c0-49.77213131-40.72265287-90.49478418-90.49478417-90.49478417zM587.41232014 647.74217627h191.54729318c19.60720323 0 34.68966726-15.08246403 34.68966729-34.68966727V134.93839925c0-16.59071043-13.57421762-30.16492806-30.16492808-30.16492805H617.57724821c-30.16492806 0-60.32985613 27.14843525-60.32985612 60.32985611v452.4739209c0 16.59071043 13.57421762 30.16492806 30.16492805 30.16492806z" fill="currentColor"></path>
+</svg>
+        <span>2</span>
+      </div>
+      <div class="count-box--item">
+        <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
+</svg>
+        0
+      </div>
+      <div class="count-box--item">
+        <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
+</svg>
+        1
+      </div>
+    </div>
+  </div>
+</section>
+
+      
+
+      
+<section class="widet-notice widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-notice" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M512 945.02305225v28.15620663a24.27259221 24.27259221 0 0 1-24.27259221 24.27259335H394.0352a48.54518557 48.54518557 0 0 1-41.74885888-23.78714112l-110.68302222-184.47170332a132.04290333 132.04290333 0 0 1-17.47626667-48.54518557h118.4502511a200.97706667 200.97706667 0 0 1 76.21594113 14.56355556l20.38897777 133.49925888a48.54518557 48.54518557 0 0 0 36.40888888 27.67075555l16.01991111 2.91271112a24.27259221 24.27259221 0 0 1 20.38897778 25.72894889zM997.45185223 463.45481443a194.18074112 194.18074112 0 0 1-38.8361489 116.50844445 24.75804445 24.75804445 0 0 1-36.4088889 0l-34.95253333-34.95253333a24.27259221 24.27259221 0 0 1-2.91271111-30.58346667 97.09036999 97.09036999 0 0 0 0-106.79940665 24.27259221 24.27259221 0 0 1 2.91271111-30.58346666l34.95253333-34.95253334a24.75804445 24.75804445 0 0 1 18.93262223-7.28177777 26.2144 26.2144 0 0 1 17.47626667 9.70903665A194.18074112 194.18074112 0 0 1 997.45185223 463.45481443z m-194.18074112-388.36148111v776.72296335a48.54518557 48.54518557 0 0 1-48.54518556 48.54518443h-28.64165888a48.54518557 48.54518557 0 0 1-33.98163001-14.07810332l-145.63555556-143.20829668A291.27111111 291.27111111 0 0 0 342.57730333 657.63555556H172.18370333a145.63555556 145.63555556 0 0 1-145.63555556-145.63555556v-97.09036999a145.63555556 145.63555556 0 0 1 145.63555556-145.63555556h170.3936a291.27111111 291.27111111 0 0 0 206.31703779-85.43952668l145.63555555-143.20829554a48.54518557 48.54518557 0 0 1 33.98162888-14.07810446H754.72592555a48.54518557 48.54518557 0 0 1 48.54518556 48.54518555z" fill="currentColor"></path>
+</svg>
+    <span>NOTICE</span>
+  </div>
+  <div class="widget-body">
+    <p>新搭建的博客，欢迎来玩~</p>
+  </div>
+</section>
+
+
+      <section class="widget-categorys widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-categories" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M900.3614811 257.09082106h-339.81629553l-67.96326003-101.9448889c-19.41807444-29.12711113-48.54518557-43.69066667-82.52681443-43.69066667H123.6385189c-53.39970333 0-97.09036999 43.69066667-97.09037113 97.09036999v582.54222222c0 53.39970333 43.69066667 97.09036999 97.09037113 97.09037002h776.7229622c53.39970333 0 97.09036999-43.69066667 97.09037113-97.09037002V354.18119104c0-53.39970333-43.69066667-97.09036999-97.09037113-97.09036998z m-97.09036999 242.72592554H220.72888889c-24.27259221 0-48.54518557-24.27259221-48.54518556-48.54518556s24.27259221-48.54518557 48.54518556-48.54518444h582.54222222c24.27259221 0 48.54518557 24.27259221 48.54518556 48.54518444s-24.27259221 48.54518557-48.54518556 48.54518556z" fill="currentColor"></path>
+</svg>
+    <span>CATEGORYS</span>
+  </div>
+  <div class="widget-body">
+    <ul class="categorys-list">
+      
+    </ul>
+  </div>
+</section>
+
+      <section class="widget-tags widget-item  layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-title">
+    <svg class="icon icon-tags" viewBox="0 0 1098 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M283.42180005 272q0-28.38857157-20.09142843-48.48000001t-48.47999998-20.09142842-48.48000002 20.09142842-20.09142846 48.48000001 20.09142846 48.48 48.48000002 20.09142843 48.47999998-20.09142843 20.09142843-48.48zM855.0332285 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.03999997 263.58857157q-20.9142853 19.81714313-48.75428534 19.81714312-28.38857157 0-48.20571468-19.81714312l-383.04-383.58857157q-20.36571468-19.81714313-34.55999999-54.10285688t-14.19428534-62.6742853l0-222.85714313q0-27.84000002 20.36571469-48.20571469t48.2057147-20.36571466l222.85714313 0q28.38857157 0 62.6742853 14.19428529t54.65142842 34.55999999l383.04000001 382.49142843q19.81714313 20.9142853 19.81714314 48.75428532zM1060.74751475 580.57142843q0 28.38857157-19.81714313 48.2057147l-263.04 263.58857157q-20.9142853 19.81714313-48.75428531 19.81714312-19.26857155 0-31.61142843-7.47428531t-28.38857159-24.13714314l251.79428534-251.7942853q19.81714313-19.81714313 19.81714308-48.20571469 0-27.84000002-19.81714308-48.75428531l-383.04000001-382.49142845q-20.36571468-20.36571468-54.65142842-34.55999999t-62.67428532-14.19428534l120 0q28.38857157 0 62.67428532 14.19428534t54.65142842 34.55999999l383.03999998 382.49142845q19.81714313 20.9142853 19.81714314 48.75428531z" fill="currentColor"></path>
+</svg>
+    <span>TAGS</span>
+  </div>
+  <div class="widget-body">
+    <div class="tags-cloud">
+      <a href="/tags/OI/" style="font-size: 10px;" class="tags-cloud-0">OI</a>
+    </div>
+  </div>
+</section>
+    </div>
+  </article>
+</div>
+
+    <!-- footer container -->
+<footer id="footer" class="footer">
+  <div class="footer-container">
+    
+    <div class="social-icons">
+      
+        
+      
+        
+      
+        
+      
+        
+          <a href="https://github.com/ztemil/" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
+            <svg class="icon icon-github" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M64.6 512c0 195.6 125.4 361.9 300.1 422.9 23.5 5.9 19.9-10.8 19.9-22.2v-77.6c-135.8 15.9-141.3-74-150.5-89-18.5-31.5-61.9-39.5-49-54.5 31-15.9 62.5 4 98.9 58 26.4 39.1 77.9 32.5 104.1 26 5.7-23.5 17.9-44.5 34.7-60.9-140.7-25.2-199.4-111.1-199.4-213.3 0-49.5 16.4-95.1 48.4-131.8-20.4-60.6 1.9-112.4 4.9-120.1 58.2-5.2 118.5 41.6 123.3 45.3 33.1-8.9 70.8-13.7 112.9-13.7 42.4 0 80.3 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.4-43.9 2.9 7.7 24.7 58.3 5.5 118.1 32.5 36.8 49 82.8 49 132.4 0 102.3-59 188.3-200.2 213.2 23.5 23.3 38.1 55.5 38.1 91.1v112.7c0.8 9 0 17.9 15.1 17.9C832.7 877 960.4 709.4 960.4 512.1c0-247.5-200.6-447.9-447.9-447.9C265 64.1 64.6 264.5 64.6 512z"></path>
+</svg>
+          </a>
+        
+      
+        
+      
+    </div>
+     
+    <p>&copy; 2022 <a href="/" target="_blank">Ztemily</a></p>
+
+    
+
+    <p>Powered by <a href="https://hexo.io" target="_blank" rel="noopener noreferrer">Hexo</a> Theme - <a href="https://github.com/miiiku/flex-block" target="_blank" rel="noopener noreferrer author">flex-block</a></p>
+
+    <p>
+      <a href="javascript:;" id="theme-light">🌞 浅色</a>
+      <a href="javascript:;" id="theme-dark">🌛 深色</a>
+      <a href="javascript:;" id="theme-auto">🤖️ 自动</a>
+    </p>
+  </div>
+</footer>
+  </div>
+
+  <div class="back-to-top-fixed soft-size--round soft-style--box">
+    <svg class="icon icon-back-to-top" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <path d="M725.333333 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8l-213.333333-213.333333c-17.066667-17.066667-17.066667-42.666667 0-59.733333s42.666667-17.066667 59.733333 0l213.333333 213.333333c17.066667 17.066667 17.066667 42.666667 0 59.733333C746.666667 422.4 738.133333 426.666667 725.333333 426.666667z"></path>
+      <path d="M298.666667 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8-17.066667-17.066667-17.066667-42.666667 0-59.733333l213.333333-213.333333c17.066667-17.066667 42.666667-17.066667 59.733333 0s17.066667 42.666667 0 59.733333l-213.333333 213.333333C320 422.4 311.466667 426.666667 298.666667 426.666667z"></path>
+      <path d="M512 896c-25.6 0-42.666667-17.066667-42.666667-42.666667L469.333333 170.666667c0-25.6 17.066667-42.666667 42.666667-42.666667s42.666667 17.066667 42.666667 42.666667l0 682.666667C554.666667 878.933333 537.6 896 512 896z"></path>
+    </svg>
+  </div>
+
+  
+  <!-- aplayer -->
+
+
+<!-- dplayer -->
+
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  
+  <!-- 尾部用户自定义相关内容 -->
+</body>
+</html>
