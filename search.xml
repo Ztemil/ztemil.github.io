@@ -109,7 +109,7 @@
   </entry>
   <entry>
     <title>类欧几里得算法</title>
-    <url>/2022/07/30/%E7%B1%BB%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E7%AE%97%E6%B3%95/</url>
+    <url>/2022/07/20/%E7%B1%BB%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<h1 id="类欧几里得算法"><a class="markdownIt-Anchor" href="#类欧几里得算法"></a> 类欧几里得算法</h1>
 <p>用于解一些神奇式子，形如：</p>
 <p>$ { f(a,b,c,d)=\sum\limits_{i=0}^{n}\lfloor{\frac{ai+b}{c}}\rfloor } $</p>
@@ -217,7 +217,7 @@ n\lfloor\frac{an+b}{c}\rfloor(\lfloor\frac{an+b}{c}\rfloor+1)-2f(c,c-b-1,a,\lflo
   </entry>
   <entry>
     <title>简单的生成函数</title>
-    <url>/2022/07/31/%E7%AE%80%E5%8D%95%E7%9A%84%E7%94%9F%E6%88%90%E5%87%BD%E6%95%B0/</url>
+    <url>/2022/07/21/%E7%AE%80%E5%8D%95%E7%9A%84%E7%94%9F%E6%88%90%E5%87%BD%E6%95%B0/</url>
     <content><![CDATA[<h1 id="生成函数"><a class="markdownIt-Anchor" href="#生成函数"></a> 生成函数</h1>
 <p>毒。</p>
 <p>定义：对于一个序列<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo stretchy="false">{</mo><msub><mi>a</mi><mi>i</mi></msub><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">\{ a_i \}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord"><span class="mord mathdefault">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">}</span></span></span></span>，我们构造一个函数取表示它。</p>
